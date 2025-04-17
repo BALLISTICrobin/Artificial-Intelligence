@@ -1,4 +1,3 @@
-#generate A star algorithm with necessary heuristic functions and with the help of node.py
 from node import Node
 import math
 import heapq
@@ -71,62 +70,59 @@ class AStarAlgo:
         manhattanDistance = 0
         conflicts = 0
     
-        # First calculate Manhattan distance
         manhattanDistance = self.manhattan_distance(node)
     
-        # Check for row conflicts
         for i in range(n):
              for j in range(n):
                 val1 = node.board[i][j]
-                if val1 != 0 and (val1 - 1) // n == i:  # Tile belongs in this row
+                if val1 != 0 and (val1 - 1) // n == i:  
                     for k in range(j + 1, n):
                         val2 = node.board[i][k]
-                        if val2 != 0 and (val2 - 1) // n == i:  # Second tile belongs in same row
+                        if val2 != 0 and (val2 - 1) // n == i:  
                             if (val1 - 1) % n > (val2 - 1) % n:
                                 conflicts += 1
     
-        # Check for column conflicts
         for j in range(n):
             for i in range(n):
                 val1 = node.board[i][j]
-                if val1 != 0 and (val1 - 1) % n == j:  # Tile belongs in this column
+                if val1 != 0 and (val1 - 1) % n == j:
                     for k in range(i + 1, n):
                         val2 = node.board[k][j]
-                        if val2 != 0 and (val2 - 1) % n == j:  # Second tile belongs in same column
+                        if val2 != 0 and (val2 - 1) % n == j: 
                             if (val1 - 1) // n > (val2 - 1) // n:
                                 conflicts += 1
     
         return manhattanDistance + 2 * conflicts
         
     def solve(self, initial_board, goal_board):
-        # Create start node
+       
         start_node = Node(initial_board)
-        start_node.h = self.manhattan_distance(start_node)  # Use the appropriate heuristic
+        start_node.h = self.manhattan_distance(start_node)  
         start_node.f = start_node.g + start_node.h
 
-        # Initialize open list (priority queue)
+       
         heapq.heappush(self.open_list, start_node)
         self.explored_nodes += 1
 
         while self.open_list:
-            # Get node with lowest f value
+      
             current_node = heapq.heappop(self.open_list)
             self.expanded_nodes += 1
 
-            # Check if current node is the goal
+           
             if current_node.isGoal(goal_board):
                 return current_node.getFullPath()
         
-            # Add to closed list
+            
             self.closed_list.add(current_node)
 
-            # Generate children
+           
             for child in current_node.generateChildNodes():
-                # Skip if in closed list
+                
                 if child in self.closed_list:
                     continue
             
-                # Calculate heuristic based on selected function
+                
                 if self.heuristic_fn == Hamming_Distance:
                     child.h = self.hamming_distance(child)
                 elif self.heuristic_fn == Manhattan_Distance:
@@ -138,13 +134,13 @@ class AStarAlgo:
             
                 child.f = child.g + child.h
             
-                # Check if child is already in open list
+             
                 in_open = False
                 for open_node in self.open_list:
                     if open_node.board == child.board:
                         in_open = True
                         if child.f < open_node.f:
-                            # Update the node in open list if better path found
+                           
                             open_node.g = child.g
                             open_node.h = child.h
                             open_node.f = child.f
@@ -155,5 +151,5 @@ class AStarAlgo:
                     heapq.heappush(self.open_list, child)
                     self.explored_nodes += 1
     
-        # No solution found
+      
         return None

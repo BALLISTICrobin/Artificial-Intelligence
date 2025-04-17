@@ -1,4 +1,3 @@
-#create a node class where every state is a node
 import copy 
 
 class Node:

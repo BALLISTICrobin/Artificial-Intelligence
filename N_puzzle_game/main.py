@@ -29,7 +29,6 @@ def read_board(size):
     return initial_board
 
 def create_goal_board(size):
-    """Create the goal board configuration for the given size"""
     goal = []
     num = 1
     for i in range(size):
@@ -44,7 +43,6 @@ def create_goal_board(size):
     return goal
 
 def print_solution(solution_path, solver):
-    """Print the solution in the required format"""
     if solution_path:
         print(f"Minimum number of moves = {len(solution_path)-1}")
         print("\nSteps:")
@@ -52,7 +50,7 @@ def print_solution(solution_path, solver):
             for i in range(len(node.board)):
                 for j in range(len(node.board[i])):
                     if node.board[i][j] == 0:
-                        print(" ", end=" ")
+                        print(0, end=" ")
                     else:
                         print(node.board[i][j], end=" ")
                 print()
@@ -60,14 +58,10 @@ def print_solution(solution_path, solver):
     else:
         print("Unsolvable puzzle")
     
-    # print(f"Nodes explored: {solver.explored_nodes}")
-    # print(f"Nodes expanded: {solver.expanded_nodes}")
+    print(f"Nodes explored: {solver.explored_nodes}")
+    print(f"Nodes expanded: {solver.expanded_nodes}")
 
 def is_solvable(board):
-    """
-    Check if the given board configuration is solvable.
-    Returns True if solvable, False otherwise.
-    """
     n = len(board)
     inversions = 0
     blank_row = 0
