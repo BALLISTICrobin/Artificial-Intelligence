@@ -48,10 +48,12 @@ class Node:
         return path[::-1]
     
     def __lt__(self, other):
-        """
-        Comparison method for priority queue. Nodes are compared based on their f values.
-        """
-        return self.f < other.f
+        # First priority: lower f
+        if self.f != other.f:
+            return self.f < other.f
+        # Tie-breaker: lower h (closer to goal)
+        return self.h < other.h
+
     
     def __eq__(self, other):
         """
