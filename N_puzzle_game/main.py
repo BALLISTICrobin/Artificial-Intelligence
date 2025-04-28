@@ -66,25 +66,25 @@ def is_solvable(board):
     inversions = 0
     blank_row = 0
     
-    # Flatten the board and count inversions
+   
     flat_board = []
     for i in range(n):
         for j in range(n):
             if board[i][j] == 0:
-                blank_row = n - i  # row from bottom (1-based)
+                blank_row = n - i 
             else:
                 flat_board.append(board[i][j])
     
-    # Count inversions
+    
     for i in range(len(flat_board)):
         for j in range(i + 1, len(flat_board)):
             if flat_board[i] > flat_board[j]:
                 inversions += 1
     
-    # Check solvability rules
-    if n % 2 == 1:  # Odd grid size
+   
+    if n % 2 == 1:
         return inversions % 2 == 0
-    else:  # Even grid size
+    else:  
         return ((blank_row % 2 == 1) and (inversions % 2 == 0)) or ((blank_row % 2 == 0) and (inversions % 2 == 1))
 
 def main():
@@ -94,12 +94,12 @@ def main():
     initial_board = read_board(size)
     goal_board = create_goal_board(size)
     
-    # Check if puzzle is solvable
+    
     if not is_solvable(initial_board):
         print("Unsolvable puzzle")
         return
     
-    # Select heuristic
+   
     print("\nSelect heuristic function:")
     print("1. Hamming Distance")
     print("2. Manhattan Distance")
@@ -118,11 +118,11 @@ def main():
         print("Invalid choice. Using Manhattan Distance as default.")
         choice = 2
     
-    # Solve the puzzle
+   
     n_puzzle_solver = AStarAlgo(heuristic_map[choice])
     solution_path = n_puzzle_solver.solve(initial_board, goal_board)
     
-    # Print results
+ 
     print_solution(solution_path, n_puzzle_solver)
 
 if __name__ == "__main__":
