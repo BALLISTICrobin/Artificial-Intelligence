@@ -1,40 +1,38 @@
-import java.io.IOException;
-import java.util.List;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Usage: java Main <criterion> <maxDepth>");
-            System.out.println("Example: java Main IG 3");
-            System.exit(1);
-        }
-
-        String criterion = args[0];
-        int maxDepth = 0;
-        try {
-            maxDepth = Integer.parseInt(args[1]);
-        } catch (NumberFormatException e) {
-            System.out.println("maxDepth must be an integer");
-            System.exit(1);
-        }
-
         String[] datasets = {"iris.csv", "adult.data"};
+        String[] criteria = {"IG", "IGR", "NWIG"};
+        int maxDepthLimit = 6;
+        int numRuns = 20;
 
         for (String dataset : datasets) {
-            try {
-                System.out.println("\nProcessing dataset: " + dataset);
-                DataHandler dataHandler = new DataHandler(dataset);
-                List<List<String[]>> split = dataHandler.splitData(0.8, new Random());
-                DecisionTree tree = new DecisionTree(criterion, maxDepth);
-                tree.train(split.get(0), dataHandler.getAttributes(), dataHandler.getAttributeValues());
-                Evaluator evaluator = new Evaluator(dataHandler, criterion, maxDepth);
-                evaluator.runExperiments(20);
-                System.out.println("Results for " + dataset + ":");
-                evaluator.printResults();
-            } catch (IOException e) {
-                System.out.println("Error reading dataset " + dataset + ": " + e.getMessage());
+            for (String criterion : criteria) {
+                try {
+                    DataHandler dataHandler = new DataHandler(dataset);
+                    String datasetName = dataset.replace(".csv", "").replace(".data", "");
+                    String outputFile = "results_" + datasetName + "_" + criterion + ".csv";
+
+                    // Prepare CSV header
+                    try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+                        writer.println("Criterion,MaxDepth,AvgAccuracy,AvgNodeCount,AvgTreeDepth");
+                    }
+
+                    for (int depth = 0; depth <= maxDepthLimit; depth++) {
+                        Evaluator evaluator = new Evaluator(dataHandler, criterion, depth);
+                        evaluator.runExperiments(numRuns);
+                        evaluator.saveSummaryLine(outputFile, criterion, depth);
+                        System.out.printf("Saved %s depth=%d\n", dataset, depth);
+                    }
+
+                } catch (IOException e) {
+                    System.err.println("Error processing dataset " + dataset + ": " + e.getMessage());
+                }
             }
         }
+
+        System.out.println("✅ All evaluations completed.");
     }
 }

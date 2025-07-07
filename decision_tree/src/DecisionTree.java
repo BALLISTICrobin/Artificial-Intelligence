@@ -7,6 +7,7 @@ class DecisionTree {
     private int nodeCount;
     private int treeDepth;
     private List<String> attributes;
+    private Map<String, Integer> attributeIndexMap;
 
     static class Node {
         String attribute;
@@ -29,6 +30,10 @@ class DecisionTree {
 
     public void train(List<String[]> data, List<String> attributes, Map<String, List<String>> attributeValues) {
         this.attributes = new ArrayList<>(attributes);
+        this.attributeIndexMap = new HashMap<>();
+        for (int i = 0; i < attributes.size(); i++) {
+            attributeIndexMap.put(attributes.get(i), i);
+        }
         root = buildTree(data, attributes, attributeValues, 0);
     }
 
@@ -73,9 +78,9 @@ class DecisionTree {
 
         for (String attr : attributes) {
             double score = switch (criterion) {
-                case "IG" -> Metrics.calculateInformationGain(data, attr, attributeValues.get(attr), attributes);
-                case "IGR" -> Metrics.calculateInformationGainRatio(data, attr, attributeValues.get(attr), attributes);
-                case "NWIG" -> Metrics.calculateNWIG(data, attr, attributeValues.get(attr), attributes);
+                case "IG" -> Metrics.calculateInformationGain(data, attr, attributeValues.get(attr), this.attributes);
+                case "IGR" -> Metrics.calculateInformationGainRatio(data, attr, attributeValues.get(attr), this.attributes);
+                case "NWIG" -> Metrics.calculateNWIG(data, attr, attributeValues.get(attr), this.attributes);
                 default -> throw new IllegalArgumentException("Unknown criterion: " + criterion);
             };
             if (score > bestScore) {
@@ -108,16 +113,18 @@ class DecisionTree {
         for (String value : values) {
             subsets.put(value, new ArrayList<>());
         }
-        int attrIndex = attributes.indexOf(attribute);
-        if (attrIndex == -1) {
-            throw new IllegalArgumentException("Attribute " + attribute + " not found in data");
+
+        Integer attrIndex = attributeIndexMap.get(attribute);
+        if (attrIndex == null) {
+            throw new IllegalArgumentException("Attribute " + attribute + " not found in index map");
         }
+
         for (String[] row : data) {
+            if (attrIndex >= row.length) continue; // safety check
             String value = row[attrIndex];
             if (subsets.containsKey(value)) {
                 subsets.get(value).add(row);
             } else {
-                // Safely handle unexpected values by ensuring 'Unknown' key exists
                 subsets.computeIfAbsent("Unknown", k -> new ArrayList<>()).add(row);
             }
         }
@@ -132,14 +139,15 @@ class DecisionTree {
         if (node.isLeaf) {
             return node.classLabel;
         }
-        int attrIndex = attributes.indexOf(node.attribute);
-        if (attrIndex == -1) {
-            return node.classLabel; // Default to majority class if attribute not found
+        Integer attrIndex = attributeIndexMap.get(node.attribute);
+        if (attrIndex == null || attrIndex >= instance.length) {
+            return node.classLabel;
         }
+
         String value = instance[attrIndex];
         Node child = node.children.getOrDefault(value, null);
         if (child == null) {
-            return node.classLabel; // Default to majority class if path doesn't exist
+            return node.classLabel;
         }
         return predict(instance, child);
     }
